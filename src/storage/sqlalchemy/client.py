@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 from functools import cached_property
 
 from sqlalchemy import Engine, create_engine
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base, scoped_session, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker, create_async_engine
+from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass, scoped_session, sessionmaker
 
 from config import DBSettings
 from interfaces import ISQLAlchemy
@@ -42,11 +42,10 @@ class SqlAlchemyAsync(ISQLAlchemy):
 
     @cached_property
     def Session(self):  # noqa
-        session_factory = sessionmaker(  # noqa
+        session_factory = async_sessionmaker(  # noqa
             autocommit=False,
             autoflush=False,
             bind=self._build_engine(),
-            class_=AsyncSession,
             expire_on_commit=False,
         )
         return session_factory
@@ -70,4 +69,5 @@ class SqlAlchemyAsync(ISQLAlchemy):
             await db.close()
 
 
-Base = declarative_base()
+class Base(DeclarativeBase, MappedAsDataclass):
+    pass
